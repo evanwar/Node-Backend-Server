@@ -16,7 +16,7 @@ const getUsers = async (req, res) => {
 
 const createUser = async (req, res = response) => {
 
-    const { email, password, name } = req.body;
+    const { email} = req.body;
 
     const errors = validationResult(req);
 
