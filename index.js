@@ -10,21 +10,18 @@ const { dbConnection } = require('./database/config');
 
 const app = express();
 
+
 app.use(cors());
+
+//Lectura y parseo del body
+
+app.use(express.json());
 
 dbConnection();
 
+app.use('/api/users', require('./routes/users'));
 
 const port = process.env.PORT;
-
-app.get('/', (req, res) => {
-
-    res.json({
-        ok: true,
-        msj: 'Hola Mundo!'
-    });
-
-});
 
 app.listen(port, () => {
     console.log('Sevidor corriendo port:' + port);
