@@ -20,6 +20,7 @@ app.use(express.json());
 dbConnection();
 
 app.use('/api/users', require('./routes/users'));
+app.use('/api/login', require('./routes/auth'));
 
 const port = process.env.PORT;
 

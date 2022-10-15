@@ -2,6 +2,7 @@ const { response } = require('express');
 const User = require('../models/user');
 
 const bcrypt = require('bcryptjs');
+const { generateJWT } = require('../helpers/jwt');
 
 const getUsers = async (req, res) => {
 
@@ -40,10 +41,12 @@ const createUser = async (req, res = response) => {
 
         await user.save();
 
+        const jwt = await generateJWT(user.id, user.name, user.email)
 
         res.json({
             ok: true,
-            user
+            user,
+            jwt
         });
 
     } catch (error) {
@@ -56,7 +59,91 @@ const createUser = async (req, res = response) => {
 
 }
 
+
+const updateUser = async (req, res = response) => {
+
+    const uid = req.params.uid;
+
+    try {
+
+        const user = await User.findById(uid);
+
+        if (!user) {
+            return res.status(404).json({
+                ok: false,
+                msg: "El usuario no existe"
+            });
+        }
+
+        const { password, google, email, ...fields } = req.body;
+
+        if (email !== user.email) {
+            const existEmail = User.findOne({ email: req.body.email });
+
+            if (existEmail) {
+                return res.status(400).json({
+                    ok: false,
+                    msj: "La cuenta de correo ya existe."
+                });
+            }
+
+        }
+
+        fields.email = email;
+
+        const updateUser = await User.findByIdAndUpdate(uid, fields, { new: true });
+
+        res.json({
+            ok: true,
+            user: updateUser
+        });
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            ok: false,
+            msj: "Error inesperado"
+        });
+    }
+
+}
+
+const deleteUser = async (request, response = response) => {
+
+    const uid = request.params.uid;
+
+    try {
+
+        const user = await User.findById(uid);
+
+        if (!user) {
+            return response.status(404).json({
+                ok: false,
+                msj: "El usuario no existe"
+            });
+        }
+
+        await User.findByIdAndDelete(uid);
+
+        response.json({
+            ok: true,
+            msj: "Usuario eliminado"
+        });
+
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            ok: false,
+            msj: "Error inesperado"
+        });
+    }
+
+}
+
 module.exports = {
     getUsers,
-    createUser
+    createUser,
+    updateUser,
+    deleteUser
 }
